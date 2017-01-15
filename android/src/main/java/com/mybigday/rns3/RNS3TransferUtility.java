@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import android.content.Context;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -139,6 +140,9 @@ public class RNS3TransferUtility extends ReactContextBaseJavaModule {
     Region region = Region.getRegion(Regions.fromName(regionStr));
     AWSCredentials credentials = null;
     AWSCredentialsProvider credentialsProvider = null;
+    ClientConfiguration clientConfiguration = new ClientConfiguration();
+    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
     switch ((CredentialType) credentialsOptions.get("type")) {
       case BASIC:
         String sessionToken = (String) credentialsOptions.get("session_token");
@@ -177,9 +181,9 @@ public class RNS3TransferUtility extends ReactContextBaseJavaModule {
     }
     // TODO: support ClientConfiguration
     if (credentials != null) {
-      s3 = new AmazonS3Client(credentials);
+      s3 = new AmazonS3Client(credentials, clientConfiguration);
     } else if (credentialsProvider != null) {
-      s3 = new AmazonS3Client(credentialsProvider);
+      s3 = new AmazonS3Client(credentialsProvider, clientConfiguration);
     }
     s3.setRegion(region);
     transferUtility = new TransferUtility(s3, context);
