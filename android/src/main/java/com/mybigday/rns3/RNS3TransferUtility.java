@@ -240,9 +240,10 @@ public class RNS3TransferUtility extends ReactContextBaseJavaModule {
     String key = options.getString("key");
     File file = new File(options.getString("file"));
     ReadableMap meta = options.getMap("meta");
+    String SSEKMSarn = options.getString("SSEKMSarn");
     ObjectMetadata metaData = new ObjectMetadata();
-
     TransferObserver task;
+
     if (meta != null) {
       ReadableMapKeySetIterator iter = meta.keySetIterator();
       while (iter.hasNextKey()) {
@@ -250,10 +251,14 @@ public class RNS3TransferUtility extends ReactContextBaseJavaModule {
         String value = meta.getString(propKey);
         metaData.addUserMetadata(propKey, value);
       }
-      task = transferUtility.upload(bucket, key, file, metaData);
-    } else {
-      task = transferUtility.upload(bucket, key, file);
     }
+
+    if (SSEKMSarn != null) {
+      metaData.setSSEAlgorithm(ObjectMetadata.KMS_SERVER_SIDE_ENCRYPTION);
+      metaData.setSSEKMSKeyId(SSEKMSarn);
+    }
+
+    task = transferUtility.upload(bucket, key, file, metaData);
     subscribe(task);
     promise.resolve(convertTransferObserver(task));
   }
